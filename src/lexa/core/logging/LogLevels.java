@@ -10,7 +10,7 @@
  * Change Log
  * Date:        By: Ref:        Description:
  * ----------   --- ----------  --------------------------------------------------
- * -            -   -           -
+ * 2016-09-13   WNW             Update in line with lxData-16-09
  *================================================================================
  */
 package lexa.core.logging;
@@ -126,6 +126,7 @@ public class LogLevels {
      * @param   config
      *          The configuration for the logging.
      */
+    @Deprecated
     public void setLogging(ConfigData config) {
         try {
             this.setLogging(config.getAll());

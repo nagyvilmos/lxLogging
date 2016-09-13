@@ -13,7 +13,7 @@
  * 2013-08-08   WNW -           Split name and instance to support log levels.
  * 2013-09-19	WNW -			An existing log file will be archived before
  *								opening the stream to write to it.
- *
+ * 2016-09-13   WNW             Update in line with lxData-16-09 changes to config
  *================================================================================
  */
 package lexa.core.logging;
@@ -25,6 +25,8 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.Date;
 import lexa.core.data.DataSet;
+import lexa.core.data.config.ConfigDataSet;
+import lexa.core.data.exception.DataException;
 import lexa.core.data.formatting.DateTimeFormat;
 
 /**
@@ -247,6 +249,84 @@ public class Logger {
 //            sb.append(obj);
 //        }
         Logger.logWriter.message(this.name,type, message, data, throwable,args);
+    }
+
+    /**
+     * Configure the log writer being used by this logger.
+     * The logging is configured useing configuration data in the following
+     * format:
+     * <pre>[type - &lt;Type of logging; takes the values {@code stdout|file|dataSet}, default is {@code stdout}&gt;]
+     * [file - &lt;File for logging; not required for {@code stdout}, optional for {@code dataSet}&gt;]
+     * [levels {
+     *   &lt;Log levels as expected by {@link LogLevels#setLogging(lexa.core.data.DataSet) setLogging(DataSet)}&gt;
+     * }]</pre>
+     * At least one of the items is required.
+     * @param   config
+     *          Configuration data as described above.
+     * @throws  lexa.core.data.exception.DataException
+     *          when there is an error in the configuration.
+     */
+    public synchronized static void configure(ConfigDataSet config)
+            throws DataException
+    {
+        final String TYPE = "type";
+        final String TYPE_STDOUT = "stdout";
+        final String TYPE_FILE = "file";
+        final String TYPE_DATA_SET = "dataSet";
+        final String FILE = "file";
+        final String LEVELS = "levels";
+        
+        if (config.isEmpty())
+        {
+            throw new DataException("Empty configuration", config.getPath());
+        }
+
+        if (config.contains(LEVELS))
+        {
+            Logger.logLevels().setLogging(config.getDataSet(LEVELS));
+        }
+
+        String type = config.getString(TYPE);
+        switch (type)
+        {
+            case TYPE_STDOUT : 
+            {
+                if (config.contains(FILE))
+                {
+                    throw new DataException("Invalid configuration item", config.getPath(), FILE);
+                }
+                Logger.setLogWriter(System.out);
+                break;
+            }
+            case TYPE_FILE : 
+            {
+                if (!config.contains(FILE))
+                {
+                    throw new DataException("Missing configuration option", config.getPath(), FILE);
+                }
+                try
+                {
+                    Logger.setLogWriter(
+                            new File(config.getString(FILE))
+                    );
+                } catch (FileNotFoundException ex)
+                {
+                    throw new DataException("Unable to set logging file", config.getPath(), FILE, ex);
+                }
+                break;
+            }
+            case TYPE_DATA_SET :
+            {
+                throw new DataException("Option not implimented - dataSet", config.getPath(), TYPE);
+            }
+            default :
+            {
+                throw new DataException("Invalid logging type", config.getPath(), TYPE);
+            }
+        }
+        config.close();
+        // write a message that this has been logged:
+        Logger.logWriter.message("Logger", "CONFIGURE", "Logging configuration updated",config,null);
     }
 
     public synchronized static void setLogWriter(File file) throws FileNotFoundException {

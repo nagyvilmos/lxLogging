@@ -1,19 +1,43 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * ================================================================================
+ * Lexa - Property of William Norman-Walker
+ * --------------------------------------------------------------------------------
+ * LoggingTest.java
+ *--------------------------------------------------------------------------------
+ * Author:  William Norman-Walker
+ * Created: May 2013
+ *--------------------------------------------------------------------------------
+ * Change Log
+ * Date:        By: Ref:        Description:
+ * ----------   --- ----------  --------------------------------------------------
+ * 2016-09-13   WNW             Update in line with lxData-16-09
+ *================================================================================
  */
+
 package lxlogging;
 
 import lexa.core.data.SimpleDataSet;
+import lexa.core.data.config.ConfigDataSet;
+import lexa.core.data.exception.DataException;
 import lexa.core.logging.Logger;
 
 /**
- *
+ * Test the log writer works
+ * <br>
+ * Sets the config and then submits a single message. 
  * @author william
+ * @since 2013-05
  */
 public class LoggingTest {
-    public static void main(String ... args) {
+    public static void main(String ... args)
+            throws DataException
+    {
+        Logger.configure(
+                new ConfigDataSet(
+                        new SimpleDataSet()
+                            .put("type","stdout")
+                )
+        );
         new Logger("LoggingTest", "Test").message("test","this is the test", new SimpleDataSet().put("A","B"), new IllegalArgumentException("an exception"), " ", "plus arguments");
         Logger.close();
     }
