@@ -24,10 +24,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.Date;
+import java.util.logging.Level;
 import lexa.core.data.DataSet;
 import lexa.core.data.config.ConfigDataSet;
 import lexa.core.data.exception.DataException;
 import lexa.core.data.formatting.DateTimeFormat;
+import lexa.core.data.io.DataWriter;
 
 /**
  * A logger is used to write messages to a shared output stream.
@@ -55,7 +57,10 @@ public class Logger {
 
     public static void close() {
         Logger.logWriter.message("Logger", "CLOSE", "Closing log stream",null,null);
+        Logger.logWriter.close();
+        Logger.logWriter = null;
     }
+
     /** The name to assign for all this instance's messages */
     private final String name;
     private final String className;
@@ -243,17 +248,12 @@ public class Logger {
         if (!Logger.logLevels().isLogged(this.className, type)) {
             return;
         }
-//        StringBuilder sb = new StringBuilder(message);
-//        for (Object obj : args)
-//        {
-//            sb.append(obj);
-//        }
         Logger.logWriter.message(this.name,type, message, data, throwable,args);
     }
 
     /**
      * Configure the log writer being used by this logger.
-     * The logging is configured useing configuration data in the following
+     * The logging is configured using configuration data in the following
      * format:
      * <pre>[type - &lt;Type of logging; takes the values {@code stdout|file|dataSet}, default is {@code stdout}&gt;]
      * [file - &lt;File for logging; not required for {@code stdout}, optional for {@code dataSet}&gt;]
@@ -287,42 +287,55 @@ public class Logger {
         }
 
         String type = config.getString(TYPE);
-        switch (type)
+        try
         {
-            case TYPE_STDOUT : 
+            switch (type)
             {
-                if (config.contains(FILE))
+                case TYPE_STDOUT : 
                 {
-                    throw new DataException("Invalid configuration item", config.getPath(), FILE);
+                    if (config.contains(FILE))
+                    {
+                        throw new DataException("Invalid configuration item", config.getPath(), FILE);
+                    }
+                    Logger.setLogWriter(System.out);
+                    break;
                 }
-                Logger.setLogWriter(System.out);
-                break;
-            }
-            case TYPE_FILE : 
-            {
-                if (!config.contains(FILE))
+                case TYPE_FILE : 
                 {
-                    throw new DataException("Missing configuration option", config.getPath(), FILE);
-                }
-                try
-                {
+                    if (!config.contains(FILE))
+                    {
+                        throw new DataException("Missing configuration option", config.getPath(), FILE);
+                    }
                     Logger.setLogWriter(
                             new File(config.getString(FILE))
                     );
-                } catch (FileNotFoundException ex)
-                {
-                    throw new DataException("Unable to set logging file", config.getPath(), FILE, ex);
+                    break;
                 }
-                break;
+                case TYPE_DATA_SET :
+                {
+                    Logger.setLogWriter(
+                            new DataWriter(
+                                    new File(config.getString(FILE))
+                            )
+                    );
+                    break;
+                }
+                default :
+                {
+                    throw new DataException("Invalid logging type", config.getPath(), TYPE);
+                }
             }
-            case TYPE_DATA_SET :
-            {
-                throw new DataException("Option not implimented - dataSet", config.getPath(), TYPE);
-            }
-            default :
-            {
-                throw new DataException("Invalid logging type", config.getPath(), TYPE);
-            }
+        }
+        catch (FileNotFoundException ex)
+        {
+            Logger.logWriter.message(
+                    "Logger",
+                    "ERROR",
+                    "Failed to set log destination",
+                    config, ex);
+            throw new DataException(
+                    "Failed to set log destination",
+                    config.getPath(), FILE, ex);
         }
         config.close();
         // write a message that this has been logged:
@@ -330,46 +343,34 @@ public class Logger {
     }
 
     public synchronized static void setLogWriter(File file) throws FileNotFoundException {
-		if (file == null) {
-            throw new IllegalArgumentException("Null log stream");
-		}
-		if (!file.exists()) {
-			// does the directory?
-			file.getParentFile().mkdirs();
-		}
-		else
-		{
-			try
-			{
-				// move to archive
-				String path = file.getParent() + "//archive//";
-				String timeStamp = new DateTimeFormat(".yyyyMMdd_HHmmss_SSS.").toString(
-						new Date(file.lastModified()));
-				String archiveName = file.getName().replaceFirst("\\.", timeStamp);
-				File archive = new File(path,archiveName);
-				archive.getParentFile().mkdirs();
-				Files.move(file.toPath(), archive.toPath());
-			}
-			catch (IOException ex)
-			{
-				new Logger("Logger","static").error("Rename failed", null, ex);
-			}
-		}
-		setLogWriter(new PrintStream(file));
+		setLogWriter(new StreamLogFile(file));
 	}
     /**
      * Set the log writer to use the supplied stream.
      *
-     * @param   log
+     * @param   printStream
      *          a stream to write out log messages.
      */
-    private synchronized static void setLogWriter(PrintStream log) {
+    public synchronized static void setLogWriter(PrintStream printStream) {
+        Logger.setLogWriter(
+                new StreamLogFile(printStream)
+        );
+    }
+
+    public synchronized static void setLogWriter(DataWriter dataWriter)
+    {
+        Logger.setLogWriter(
+                new DataSetLogFile(dataWriter)
+        );
+    }
+
+    private synchronized static void setLogWriter(LogFile log)
+    {
         if (Logger.logWriter != null) {
             Logger.close();
         }
         Logger.logWriter = new LogWriter(log);
     }
-
     /**
      * Get the logging levels.
      * @return  the logging levels

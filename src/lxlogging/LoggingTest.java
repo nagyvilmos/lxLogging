@@ -35,7 +35,8 @@ public class LoggingTest {
         Logger.configure(
                 new ConfigDataSet(
                         new SimpleDataSet()
-                            .put("type","stdout")
+                            .put("type","file")
+                            .put("file","logging.log")
                 )
         );
         new Logger("LoggingTest", "Test").message("test","this is the test", new SimpleDataSet().put("A","B"), new IllegalArgumentException("an exception"), " ", "plus arguments");

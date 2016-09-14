@@ -19,6 +19,7 @@ import java.io.PrintStream;
 import java.util.*;
 import java.util.logging.Logger;
 import lexa.core.data.*;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * A single stream, shared by all the {@link Logger} instances for writing out log messages.
@@ -28,9 +29,7 @@ import lexa.core.data.*;
  */
 class LogWriter
 {
-
-    /** Stream to write to */
-    private final PrintStream log;
+    private final LogFile logFile;
     /** Messages */
     private final List<Message> messages;
 
@@ -40,7 +39,7 @@ class LogWriter
      * This is equivalent to using {@code LogWriter(System.out)}.
      */
     LogWriter() {
-        this(System.out);
+        this(new StreamLogFile());
     }
 
     /**
@@ -49,8 +48,8 @@ class LogWriter
      * @param   log
      *          a stream to write out log messages.
      */
-    LogWriter (PrintStream log) {
-        this.log = log;
+    LogWriter (LogFile logFile) {
+        this.logFile = logFile;
         this.messages = new LinkedList<>();
         this.writeMessage("LogWriter", "START", "Logging started", null, null);
     }
@@ -98,21 +97,14 @@ class LogWriter
         
         while (this.messages.size() >0)
         {
-            try
-            {
-                this.messages.get(0).print(this.log);
-            }
-            catch (Exception ex)
-            {
-                this.log.print("\n**ERROR IN LOGGING**\n");
-                ex.printStackTrace(this.log);
-                this.log.print("****\n\n");
-            }
-            finally
-            {
-                this.messages.remove(0);
-            }
+            this.logFile.write(this.messages.get(0));
+            this.messages.remove(0);
         }
-        this.log.flush();
+        this.logFile.flush();
+    }
+
+    void close()
+    {
+        this.logFile.close();
     }
 }
