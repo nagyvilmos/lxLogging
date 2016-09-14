@@ -14,21 +14,18 @@
  * 2013-09-19	WNW -			An existing log file will be archived before
  *								opening the stream to write to it.
  * 2016-09-13   WNW             Update in line with lxData-16-09 changes to config
+ * 2016-09-14   WNW             Add support to output the log to a DataWriter
+ * 2016-09-14   WNW             Update javadoc
  *================================================================================
  */
 package lexa.core.logging;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.util.Date;
-import java.util.logging.Level;
 import lexa.core.data.DataSet;
 import lexa.core.data.config.ConfigDataSet;
 import lexa.core.data.exception.DataException;
-import lexa.core.data.formatting.DateTimeFormat;
 import lexa.core.data.io.DataWriter;
 
 /**
@@ -55,6 +52,9 @@ public class Logger {
     /** The {@link LogLevels} shared by all the {@link Logger} objects. */
     private static final LogLevels LOG_LEVELS = new LogLevels();
 
+    /**
+     * Close the logger
+     */
     public static void close() {
         Logger.logWriter.message("Logger", "CLOSE", "Closing log stream",null,null);
         Logger.logWriter.close();
@@ -314,7 +314,7 @@ public class Logger {
                 case TYPE_DATA_SET :
                 {
                     Logger.setLogWriter(
-                            new DataWriter(
+                            new DataSetLogFile(
                                     new File(config.getString(FILE))
                             )
                     );
@@ -342,6 +342,11 @@ public class Logger {
         Logger.logWriter.message("Logger", "CONFIGURE", "Logging configuration updated",config,null);
     }
 
+    /**
+     * Set the log writer to a file stream
+     * @param file  file for writing the log
+     * @throws FileNotFoundException when the file cannot be found
+     */
     public synchronized static void setLogWriter(File file) throws FileNotFoundException {
 		setLogWriter(new StreamLogFile(file));
 	}
@@ -357,6 +362,10 @@ public class Logger {
         );
     }
 
+    /**
+     * Set the log writer to use a data writer
+     * @param dataWriter the data writer for the log
+     */
     public synchronized static void setLogWriter(DataWriter dataWriter)
     {
         Logger.setLogWriter(

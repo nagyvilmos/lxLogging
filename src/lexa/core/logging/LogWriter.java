@@ -10,16 +10,16 @@
  * Change Log
  * Date:        By: Ref:        Description:
  * ----------   --- ----------  --------------------------------------------------
- * 2016.02.10   WNW             Tidy up to make code more consistant with standards 
+ * 2016.02.10   WNW             Tidy up to make code more consistant with standards
+ * 2016-09-14   WNW             Add support to output the log to a DataWriter
+ * 2016-09-14   WNW             Update javadoc
  *================================================================================
  */
 package lexa.core.logging;
 
-import java.io.PrintStream;
 import java.util.*;
 import java.util.logging.Logger;
 import lexa.core.data.*;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * A single stream, shared by all the {@link Logger} instances for writing out log messages.
@@ -29,6 +29,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 class LogWriter
 {
+    /** the log file for writing messages */
     private final LogFile logFile;
     /** Messages */
     private final List<Message> messages;
@@ -59,7 +60,7 @@ class LogWriter
      * <br>
      * The message is written in the toString:
      * <pre>
-     * Day YYYY.MM.DD HH:MM:SS.SSS +0100	name	TYPE
+     * nnn  Day YYYY.MM.DD HH:MM:SS.SSS +0100	name	TYPE
      * message
      *   [data]
      *   [throwable]
@@ -103,6 +104,9 @@ class LogWriter
         this.logFile.flush();
     }
 
+    /**
+     * Close the log writer
+     */
     void close()
     {
         this.logFile.close();

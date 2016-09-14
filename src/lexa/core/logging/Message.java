@@ -1,7 +1,19 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/*
+ * ================================================================================
+ * Lexa - Property of William Norman-Walker
+ * --------------------------------------------------------------------------------
+ * Message.java
+ *--------------------------------------------------------------------------------
+ * Author:  William Norman-Walker
+ * Created: June 2015
+ *--------------------------------------------------------------------------------
+ * Change Log
+ * Date:        By: Ref:        Description:
+ * ----------   --- ----------  --------------------------------------------------
+ * 2016-09-14   WNW             Add support to output the log to a DataWriter
+ * 2016-09-14   WNW             Update javadoc
+ *================================================================================
  */
 package lexa.core.logging;
 
@@ -17,8 +29,9 @@ import lexa.core.data.ValueType;
 import lexa.core.data.formatting.DateTimeFormat;
 
 /**
- *
+ * A single message to be logged
  * @author william
+ * @since 2015-06
  */
 class Message
 {

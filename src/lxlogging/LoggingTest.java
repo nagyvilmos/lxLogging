@@ -30,18 +30,28 @@ import lexa.core.logging.Logger;
  * @since 2013-05
  */
 public class LoggingTest {
+    /**
+     * Test the logger is working correctly
+     * @param args not needed
+     */
     public static void main(String ... args)
-            throws DataException
     {
-        Logger.configure(
-                new ConfigDataSet(
-                        new SimpleDataSet()
-                            .put("type","file")
-                            .put("file","logging.log")
-                )
-        );
-        new Logger("LoggingTest", "Test").message("test","this is the test", new SimpleDataSet().put("A","B"), new IllegalArgumentException("an exception"), " ", "plus arguments");
-        Logger.close();
+        try
+        {
+            Logger.configure(
+                    new ConfigDataSet(
+                            new SimpleDataSet()
+                                .put("type","dataSet")
+                                .put("file",".\\log\\logging.log")
+                    )
+            );
+            new Logger("LoggingTest", "Test").message("test","this is the test", new SimpleDataSet().put("A","B"), new IllegalArgumentException("an exception"), " ", "plus arguments");
+            Logger.close();
+        }
+        catch (DataException ex)
+        {
+            ex.printStackTrace(System.err);
+        }
     }
     
 }
