@@ -15,11 +15,10 @@
  */
 package lexa.core.logging;
 
-import lexa.core.data.ConfigData;
 import lexa.core.data.DataItem;
 import lexa.core.data.DataSet;
-import lexa.core.data.SimpleDataSet;
-import lexa.core.data.ValueType;
+import lexa.core.data.ArrayDataSet;
+import lexa.core.data.DataType;
 import lexa.core.data.exception.DataException;
 
 /**
@@ -43,8 +42,8 @@ public class LogLevels {
      * <p>This sets up logging for all classes and all types to be on using the wildcard class and type.
      */
     LogLevels() {
-        this.logTree = new SimpleDataSet()
-				.put(LogLevels.WILD_CARD, new SimpleDataSet()
+        this.logTree = new ArrayDataSet()
+				.put(LogLevels.WILD_CARD, new ArrayDataSet()
 						.put(LogLevels.WILD_CARD,true));
     }
 
@@ -93,20 +92,20 @@ public class LogLevels {
         try {
             for (DataItem di : data)
             {
-                if (!di.getType().equals(ValueType.DATA_SET))
+                if (!di.getType().equals(DataType.DATA_SET))
                 {
                     throw new DataException("invalid log setting format",di.getKey());
                 }
                 DataSet logLevels = this.logTree.getDataSet(di.getKey());
                 if (logLevels == null)
                 {
-                    logLevels = new SimpleDataSet();
+                    logLevels = new ArrayDataSet();
                     this.logTree.put(di.getKey(), logLevels);
                 }
                 DataSet newLevels = di.getDataSet();
                 for (DataItem ni : newLevels)
                 {
-                    if (!ni.getType().equals(ValueType.BOOLEAN))
+                    if (!ni.getType().equals(DataType.BOOLEAN))
                     {
                         throw new DataException("invalid log setting format",di.getKey(),ni.getKey());
                     }
@@ -116,24 +115,6 @@ public class LogLevels {
         } catch (DataException ex) {
             this.logger().error("Cannot set logging", data, ex);
         }
-    }
-
-    /**
-     * Set the logging for a group of names and types.
-     * <p>The structure of the config is names containing types as used in
-     * {@link LogLevels#setLogging(java.lang.String, java.lang.String, boolean)
-     * setLogging(String, String, boolean}}.
-     * @param   config
-     *          The configuration for the logging.
-     */
-    @Deprecated
-    public void setLogging(ConfigData config) {
-        try {
-            this.setLogging(config.getAll());
-        } catch (DataException ex) {
-            this.logger().error("Cannot set logging", null, ex);
-        }
-
     }
 
     /**
@@ -149,11 +130,11 @@ public class LogLevels {
      */
     public void setLogging (String name, String type, boolean islogged) {
         this.setLogging(
-                new SimpleDataSet().put(name,
-                        new SimpleDataSet().put(type, islogged)));
+                new ArrayDataSet().put(name,
+                        new ArrayDataSet().put(type, islogged)));
     }
 
-    
+
     private Logger logger()
     {
         if (this.logger == null)

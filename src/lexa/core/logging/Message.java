@@ -19,13 +19,13 @@ package lexa.core.logging;
 
 import java.io.PrintStream;
 import java.util.Date;
+import lexa.core.data.ArrayDataArray;
 import lexa.core.data.DataItem;
 import lexa.core.data.DataSet;
-import lexa.core.data.SimpleDataSet;
-import lexa.core.data.SimpleValueArray;
-import lexa.core.data.Value;
-import lexa.core.data.ValueArray;
-import lexa.core.data.ValueType;
+import lexa.core.data.ArrayDataSet;
+import lexa.core.data.DataArray;
+import lexa.core.data.DataType;
+import lexa.core.data.DataValue;
 import lexa.core.data.formatting.DateTimeFormat;
 
 /**
@@ -36,8 +36,8 @@ import lexa.core.data.formatting.DateTimeFormat;
 class Message
 {
     /** Format for writing the date */
-    //private static final SimpleDateFormat dateFormat =
-    //  new SimpleDateFormat ("E yyyy.MM.dd HH:mm:ss.SSS Z");
+    //private static final ArrayDateFormat dateFormat =
+    //  new ArrayDateFormat ("E yyyy.MM.dd HH:mm:ss.SSS Z");
     private static final DateTimeFormat DATE_TIME_FORMAT = new DateTimeFormat("E yyyy.MM.dd HH:mm:ss.SSS Z");
     private static long lastMessage = 0;
     /**
@@ -57,7 +57,7 @@ class Message
     private final Object[] args;
     private final String id;
 
-    
+
     Message(String name,
             String type,
             String message,
@@ -124,13 +124,13 @@ class Message
      * @param   indent
      *          a string to write prior to each {@link DataItem}
      */
-    private void printDataValue(PrintStream stream, String prefix, Value value) {
-        ValueType type = value.getType();
+    private void printDataValue(PrintStream stream, String prefix, DataValue value) {
+        DataType type = value.getType();
         switch (type)
         {
             case ARRAY :
             {
-                ValueArray array = value.getArray();
+                DataArray array = value.getArray();
                 for (int i = 0; i < array.size(); i++)
                 {
                     this.printDataValue(stream, prefix + "[" + i + "]", array.get(i));
@@ -171,7 +171,7 @@ class Message
                     fullMessage = fullMessage + obj;
                 }
             }
-        DataSet msgData = new SimpleDataSet()
+        DataSet msgData = new ArrayDataSet()
                 .put("dateStamp",this.dateStamp)
                 .put("name",this.name)
                 .put("type",this.type)
@@ -180,18 +180,18 @@ class Message
             msgData.put("data",data);
         }
         if (this.throwable != null) {
-            ValueArray stack = new SimpleValueArray();
+            DataArray stack = new ArrayDataArray();
             for (StackTraceElement ste : this.throwable.getStackTrace())
             {
                 stack.add(ste.toString());
             }
             msgData.put("exception",
-                    new SimpleDataSet()
+                    new ArrayDataSet()
                         .put("message",this.throwable.getMessage())
                         .put("stack",stack)
             );
         }
-        return new SimpleDataSet()
+        return new ArrayDataSet()
                 .put(
                         this.id,
                         msgData

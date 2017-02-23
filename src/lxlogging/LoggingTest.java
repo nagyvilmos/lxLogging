@@ -17,7 +17,7 @@
 
 package lxlogging;
 
-import lexa.core.data.SimpleDataSet;
+import lexa.core.data.ArrayDataSet;
 import lexa.core.data.config.ConfigDataSet;
 import lexa.core.data.exception.DataException;
 import lexa.core.logging.Logger;
@@ -40,12 +40,12 @@ public class LoggingTest {
         {
             Logger.configure(
                     new ConfigDataSet(
-                            new SimpleDataSet()
+                            new ArrayDataSet()
                                 .put("type","dataSet")
                                 .put("file",".\\log\\logging.log")
                     )
             );
-            new Logger("LoggingTest", "Test").message("test","this is the test", new SimpleDataSet().put("A","B"), new IllegalArgumentException("an exception"), " ", "plus arguments");
+            new Logger("LoggingTest", "Test").message("test","this is the test", new ArrayDataSet().put("A","B"), new IllegalArgumentException("an exception"), " ", "plus arguments");
             Logger.close();
         }
         catch (DataException ex)
