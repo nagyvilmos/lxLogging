@@ -94,7 +94,9 @@ class LogWriter
     {
         this.messages.add(new Message(name, type, message, data, throwable, args));
         if (this.messages.size() > 1)
+        {
             return;
+        }
         
         while (this.messages.size() >0)
         {

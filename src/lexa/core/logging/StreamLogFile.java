@@ -70,7 +70,10 @@ class StreamLogFile
     @Override
     public void close()
     {
-        this.log.close();
+        if (this.log != System.out)
+        {
+            this.log.close();
+        }
     }
 
     @Override
@@ -94,5 +97,5 @@ class StreamLogFile
         }
     }
 
-    
+
 }
